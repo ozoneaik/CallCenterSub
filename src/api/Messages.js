@@ -9,3 +9,12 @@ export const ListMessageApi = async (roomId) => {
         return ErrorResponse(error);
     }
 }
+
+export const MessageCustApi = async (custId) => {
+    try {
+        const {data,status} = await axiosClient.get(`/messages/selectMessage/${custId}`);
+        return {data,status};
+    }catch (error){
+        return ErrorResponse(error);
+    }
+}

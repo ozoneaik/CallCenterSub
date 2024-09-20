@@ -36,6 +36,18 @@ export const ChatPageStyle = {
         '--TableCell-headBackground': 'var(--joy-palette-background-level1)',
         '--Table-headerUnderlineThickness': '1px',
         '--TableRow-hoverBackground': 'var(--joy-palette-background-level1)',
+    },
+    TableText : {
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        maxWidth: {
+            xs: '80px',   // สำหรับหน้าจอขนาดเล็ก
+            sm: '100px',  // สำหรับหน้าจอขนาดเล็กขึ้นไป
+            md: '150px',  // สำหรับหน้าจอกลางขึ้นไป
+            lg: '200px',  // สำหรับหน้าจอขนาดใหญ่ขึ้นไป
+            xl: '100%',   // สำหรับหน้าจอขนาดใหญ่มาก
+        },
     }
 
 }

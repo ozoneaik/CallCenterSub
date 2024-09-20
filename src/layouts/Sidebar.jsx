@@ -42,6 +42,7 @@ export default function Sidebar() {
         AlertDiaLog({
             text: 'ต้องการออกจากระบบหรือไม่',
             icon: 'info',
+            Outside : true,
             onPassed: async (confirm) => {
                 if (confirm) {
                     const {data, status} = await logoutApi();
@@ -51,6 +52,8 @@ export default function Sidebar() {
                         text: data.message,
                         onPassed: (confirm) => confirm && navigate('/')
                     });
+                }else{
+                    console.log('confirm is False')
                 }
             }
         });
@@ -80,9 +83,9 @@ export default function Sidebar() {
             <Box sx={{...LayoutStyle.Sidebar.ListItemButton, [`& .${listItemButtonClasses.root}`]: {gap: 1.5,},}}>
                 <List size="sm" sx={LayoutStyle.Sidebar.List}>
                     {
-                        chatRooms.length > 0 && (
+                        chatRooms && (
                             chatRooms.map((chatRoom, index) => (
-                                <ListItem component={Link} to={`/chat/room/${index}`}>
+                                <ListItem key={index} component={Link} to={`/chat/room/${index}`}>
                                     <ListItemButton>
                                         <QuestionAnswerRoundedIcon/>
                                         <ListItemContent>
