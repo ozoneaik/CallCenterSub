@@ -1,10 +1,10 @@
 import {useEffect, useState} from "react";
-import {Button, Snackbar} from "@mui/joy";
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import {Snackbar} from "@mui/joy";
 import {useNotification} from "./context/NotiContext.jsx";
 import Typography from "@mui/joy/Typography";
 import Avatar from "@mui/joy/Avatar";
 import Box from "@mui/joy/Box";
+import CircleNotificationsIcon from '@mui/icons-material/CircleNotifications';
 
 function App() {
     const [sender, setSender] = useState({});
@@ -36,7 +36,7 @@ function App() {
             <Snackbar
                 variant='outlined'
                 color="success"
-                startDecorator={<Avatar src={sender.avatar} />}
+                startDecorator={sender.contentType ? <Avatar src={sender.avatar}/> : <CircleNotificationsIcon/>}
                 size='lg'
                 anchorOrigin={{ vertical, horizontal }}
                 open={open}
@@ -50,11 +50,11 @@ function App() {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography fontWeight="bold" color='success'>
-                            ข้อความใหม่จาก {sender.custName}
+                            {sender.message} {sender.custName}
                         </Typography>
                     </Box>
                     <Typography level="body-sm">
-                        {sender.contentType === 'text' ? sender.content : 'ส่งรูปภาพ หรือ sicker'}
+                        {sender.contentType ? sender.contentType === 'text' ? sender.content : 'ส่งรูปภาพ หรือ sicker' : ''}
                     </Typography>
                 </Box>
 

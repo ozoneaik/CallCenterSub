@@ -14,6 +14,7 @@ axiosClient.interceptors.response.use(response => {
 }, error => {
     if (error.response && error.response.status === 401) {
         localStorage.removeItem('user')
+        localStorage.removeItem('notification');
         window.location.reload();
         return error;
     }

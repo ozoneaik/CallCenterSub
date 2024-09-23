@@ -6,7 +6,7 @@ import Box from "@mui/joy/Box";
 import Stack from "@mui/joy/Stack";
 import Avatar from "@mui/joy/Avatar";
 import {useEffect, useState} from "react";
-import {MessageCustApi} from "../../api/Messages.js";
+import {chatRoomListApi, MessageCustApi, shortChatApi} from "../../api/Messages.js";
 import {useAuth} from "../../context/AuthContext.jsx";
 import FormControl from "@mui/joy/FormControl";
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
@@ -24,40 +24,52 @@ export default function MessagePane() {
         description : 'ไม่พบ description'
     });
     const {custId} = useParams();
+    const [chatRooms, setChatRooms] = useState([{chatRooms : []}]);
+    const [shortChat, setShortChat] = useState([{short_chats : []}])
 
     useEffect(() => {
         const fetchData = async () => {
             const {data, status} = await MessageCustApi(custId);
             if (status === 200) {
-                console.log(data)
                 setMessages(data.chats.messages);
                 setSender(data.chats.sender)
             }
         }
-        fetchData()
+        const fetchChatRoom = async () => {
+            const {data,status} = await chatRoomListApi();
+            status === 200 && setChatRooms(data.chatRooms)
+        }
+        fetchData().then(()=> {
+            fetchChatRoom().then(async ()=>{
+                const {data,status} = await shortChatApi();
+                status === 200 && setShortChat(data.short_chats);
+            })
+        })
     }, [])
     useEffect(() => {
-        if (notification.custId === sender.custId){
-            setMessages((prevMessages) => {
-                const newId = prevMessages.length.toString();
-                return [
-                    ...prevMessages,
-                    {
-                        id: newId,
-                        content: notification.content,
-                        contentType : notification.contentType,
-                        sender: sender,
-                        created_at: new Date().toString()
-                    },
-                ];
-            });
+        if (notification){
+            if (notification.custId === sender.custId){
+                setMessages((prevMessages) => {
+                    const newId = prevMessages.length.toString();
+                    return [
+                        ...prevMessages,
+                        {
+                            id: newId,
+                            content: notification.content,
+                            contentType : notification.contentType,
+                            sender: sender,
+                            created_at: new Date().toString()
+                        },
+                    ];
+                });
+            }
         }
     }, [notification]);
     return (
         <>
             <Sheet sx={MessageStyle.Layout}>
                 {/*Message Pane Header*/}
-                <MessagePaneHeader sender={sender}/>
+                <MessagePaneHeader sender={sender} chatRooms={chatRooms} shortChat={shortChat}/>
                 {/*Message pane*/}
                 <Box sx={MessageStyle.PaneContent}>
                     <Stack spacing={2} sx={{justifyContent: 'flex-end'}}>

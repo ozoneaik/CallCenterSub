@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {useEffect, useState} from 'react';
 import GlobalStyles from '@mui/joy/GlobalStyles';
 import Avatar from '@mui/joy/Avatar';
@@ -13,8 +12,11 @@ import ListItemContent from '@mui/joy/ListItemContent';
 import Typography from '@mui/joy/Typography';
 import Sheet from '@mui/joy/Sheet';
 import QuestionAnswerRoundedIcon from '@mui/icons-material/QuestionAnswerRounded';
-import SupportRoundedIcon from '@mui/icons-material/SupportRounded';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import HomeIcon from '@mui/icons-material/Home';
 import Logo from '../assets/logo.png'
 import ColorSchemeToggle from '../ColorSchemeToggle';
 import {closeSidebar} from '../utils';
@@ -22,27 +24,28 @@ import {LayoutStyle} from "../styles/LayoutStyle.js";
 import {useAuth} from "../context/AuthContext.jsx";
 import {AlertDiaLog} from "../Dialogs/Alert.js";
 import {logoutApi} from "../api/Auth.js";
-import {Link, useNavigate} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import {ChatRoomsApi} from "../api/ChatRooms.js";
 
 export default function Sidebar() {
     const {user, setUser} = useAuth();
     const navigate = useNavigate();
     const [chatRooms, setChatRooms] = useState([]);
+    const {pathname} = useLocation();
 
     useEffect(() => {
         const fetchChatRooms = async () => {
             const {data, status} = await ChatRoomsApi();
             status === 200 && setChatRooms(data.chatRooms);
         }
-        fetchChatRooms().then(()=>console.log('fetch 👏'));
+        fetchChatRooms().then(() => console.log('fetch 👏'));
     }, [])
 
     const Logout = () => {
         AlertDiaLog({
             text: 'ต้องการออกจากระบบหรือไม่',
             icon: 'info',
-            Outside : true,
+            Outside: true,
             onPassed: async (confirm) => {
                 if (confirm) {
                     const {data, status} = await logoutApi();
@@ -50,9 +53,14 @@ export default function Sidebar() {
                     AlertDiaLog({
                         icon: status === 200 ? 'success' : 'error',
                         text: data.message,
-                        onPassed: (confirm) => confirm && navigate('/')
+                        onPassed: (confirm) => {
+                            if (confirm) {
+                                localStorage.removeItem('notification');
+                                navigate('/')
+                            }
+                        }
                     });
-                }else{
+                } else {
                     console.log('confirm is False')
                 }
             }
@@ -82,11 +90,20 @@ export default function Sidebar() {
             </Box>
             <Box sx={{...LayoutStyle.Sidebar.ListItemButton, [`& .${listItemButtonClasses.root}`]: {gap: 1.5,},}}>
                 <List size="sm" sx={LayoutStyle.Sidebar.List}>
+
+                    <ListItem component={Link} to={`/home`}>
+                        <ListItemButton selected={pathname === `/home`}>
+                            <HomeIcon/>
+                            <ListItemContent>
+                                <Typography level="title-sm">หน้าหลัก</Typography>
+                            </ListItemContent>
+                        </ListItemButton>
+                    </ListItem>
                     {
                         chatRooms && (
                             chatRooms.map((chatRoom, index) => (
                                 <ListItem key={index} component={Link} to={`/chat/room/${index}`}>
-                                    <ListItemButton>
+                                    <ListItemButton selected={pathname === `/chat/room/${index}`}>
                                         <QuestionAnswerRoundedIcon/>
                                         <ListItemContent>
                                             <Typography level="title-sm">{chatRoom.name}</Typography>
@@ -97,13 +114,24 @@ export default function Sidebar() {
                             ))
                         )
                     }
-
                 </List>
                 <List size="sm" sx={LayoutStyle.Sidebar.ListButton}>
                     <ListItem>
                         <ListItemButton>
-                            <SupportRoundedIcon/>
-                            การตั้งค่า
+                            <MeetingRoomIcon/>
+                            จัดการห้องแชท
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem>
+                        <ListItemButton>
+                            <PeopleAltIcon/>
+                            จัดการลูกค้า
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem>
+                        <ListItemButton>
+                            <ManageAccountsIcon/>
+                            จัดการผู้ใช้
                         </ListItemButton>
                     </ListItem>
                 </List>

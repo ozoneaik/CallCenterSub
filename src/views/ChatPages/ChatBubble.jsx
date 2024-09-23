@@ -24,8 +24,9 @@ export default function Bubble(props) {
                         contentType === 'sticker' ? (
                             <img src={content} alt=""/>
                         ) : contentType === 'image' ? (
-                            <Sheet variant="outlined"
-                                   sx={isSent ? MessageStyle.Bubble.ImageIsSent : MessageStyle.Bubble.ImageIsNotSent}>
+                            <Sheet
+                                variant="outlined"
+                                sx={isSent ? MessageStyle.Bubble.ImageIsSent : MessageStyle.Bubble.ImageIsNotSent}>
                                 <Stack direction="row" spacing={1.5} sx={{alignItems: 'center'}}>
                                     <Link to={content} target={'_blank'}>
                                         <img src={content} width={200} alt=""/>
@@ -33,8 +34,9 @@ export default function Bubble(props) {
                                 </Stack>
                             </Sheet>
                         ) : (
-                            <Typography level="body-sm"
-                                        sx={isSent ? MessageStyle.Bubble.TextIsSent : MessageStyle.Bubble.TextIsNotSent}>
+                            <Typography
+                                level="body-sm"
+                                sx={isSent ? MessageStyle.Bubble.TextIsSent : MessageStyle.Bubble.TextIsNotSent}>
                                 {content}
                             </Typography>
                         )

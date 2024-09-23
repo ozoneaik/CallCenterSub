@@ -1,41 +1,59 @@
-import {Link, useParams} from "react-router-dom";
 import {Button, Sheet, Table} from "@mui/joy";
+import {useParams} from "react-router-dom";
 import {ChatPageStyle} from "../../styles/ChatPageStyle.js";
 import {useEffect, useState} from "react";
-import {ListMessageApi} from "../../api/Messages.js";
-import {newMessage} from "../../echo.js";
+import {CustomerListNewDm, receiveApi} from "../../api/Messages.js";
 import Typography from "@mui/joy/Typography";
 import Box from "@mui/joy/Box";
 import {AlertDiaLog} from "../../Dialogs/Alert.js";
 import BreadcrumbsComponent from "../../components/Breadcrumbs.jsx";
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import ChatIcon from '@mui/icons-material/Chat';
 import Chip from "@mui/joy/Chip";
 import Avatar from "@mui/joy/Avatar";
-import {convertDate, getRandomColor} from "../../components/Options.jsx";
+import {convertLocalDate, getRandomColor} from "../../components/Options.jsx";
 import {useNotification} from "../../context/NotiContext.jsx";
 
-const pendingPath = [
-    {name: 'ห้องแชทรวม'},
-    {name: 'รายละเอียด'}
-];
+const pendingPath = [{name: 'ห้องแชทรวม'}, {name: 'รายละเอียด'}];
 
 export default function MainChat() {
     const {notification} = useNotification();
     const {roomId} = useParams();
-    const [chats, setChats] = useState([]);
+    const [progress, setProgress] = useState([]);
+    const [pending, setPending] = useState([]);
     useEffect(() => {
-        console.log('useEffect')
         const fetchChats = async () => {
             try {
-                const {data, status} = await ListMessageApi(roomId);
-                status === 200 &&  setChats(data.chats);
-            } catch (error)  {
+                const {data, status} = await CustomerListNewDm(roomId);
+                if (status === 200) {
+                    setProgress(data.progress);
+                    setPending(data.pending);
+                }
+            } catch (error) {
                 AlertDiaLog({title: 'เกิดข้อผิดพลาด'})
             }
         }
         fetchChats().then();
-    }, [roomId,notification]);
+    }, [roomId, notification]);
+
+    const handleChat = (custId, title) => {
+        if (title === 'รอดำเนินการ') {
+            AlertDiaLog({
+                title: 'ต้องการรับเรื่องหรือไม่',
+                text: 'กด "ตกลง" เพื่อยืนยันรับเรื่อง',
+                icon: 'info',
+                onPassed: async (confirm) => {
+                    if (confirm) {
+                        const {data,status} = await receiveApi(custId);
+                        if (status === 200) {
+                            window.open(`/chat/message/${custId}`, '_blank');
+                        }else{
+                            AlertDiaLog({text: data.message})
+                        }
+                    }
+                }
+            })
+        } else window.open(`/chat/message/${custId}`, '_blank');
+    }
 
     const ListTableComponent = ({dataset, title}) => {
         return (
@@ -62,53 +80,50 @@ export default function MainChat() {
                                 <tr key={index}>
                                     <td>
                                         <div style={{display: "flex", alignItems: "center"}}>
-                                            <Avatar size='sm' sx={{mr: 1}} src={data.sender.avatar}/>
+                                            {data.avatar && <Avatar size='sm' sx={{mr: 1}} src={data.avatar}/>}
                                             <Typography>
-                                                {data.sender.name}
+                                                {data.name}
                                             </Typography>
                                         </div>
                                     </td>
                                     <td>
                                         <div style={{display: "flex", alignItems: "center"}}>
-                                            <Avatar color={getRandomColor()} size='sm' sx={{mr: 1}}/>
+                                            {data.userReply &&
+                                                <Avatar color={getRandomColor()} size='sm' sx={{mr: 1}}/>}
                                             <Typography>
-                                                {data.sender.userReply}
+                                                {data.userReply || '-'}
                                             </Typography>
                                         </div>
                                     </td>
                                     <td>
                                         <Chip color="warning">
                                             <Typography sx={ChatPageStyle.TableText}>
-                                                {convertDate(data.sender.created_at)}
+                                                {convertLocalDate(data.created_at)}
                                             </Typography>
                                         </Chip>
                                     </td>
                                     <td>
                                         <Chip color="primary">
                                             <Typography sx={ChatPageStyle.TableText}>
-                                                {convertDate(data.sender.updated_at)}
+                                                {convertLocalDate(data.updated_at)}
                                             </Typography>
                                         </Chip>
                                     </td>
                                     <td>
                                         <Button size='sm' variant='outlined' sx={{mr: 1}}
-                                                disabled={title === 'กำลังดำเนินการ' && index !== 0}
-                                                component={Link} to={`/chat/message/${data.sender.custId}`} target={'_blank'}
+                                                disabled={title === 'รอดำเนินการ' && index !== 0}
+                                                startDecorator={<ChatIcon/>}
+                                                onClick={() => handleChat(data.custId, title)}
                                         >
-                                            <ChatIcon/>
-                                        </Button>
-                                        <Button size='sm' variant='outlined'
-                                                color='warning' disabled={title === 'กำลังดำเนินการ' && index !== 0}>
-                                            <ManageAccountsIcon/>
+                                            <Typography>{title === 'รอดำเนินการ' ? 'รับเรื่อง' : 'ดูข้อความ'}</Typography>
                                         </Button>
                                     </td>
                                 </tr>
                             )) : (
                                 <tr>
                                     <td colSpan={5} style={{textAlign: 'center'}}>
-                                        <Chip color={getRandomColor()}>
-                                            ไม่มีข้อมูล
-                                        </Chip></td>
+                                        <Chip color={getRandomColor()}>ไม่มีข้อมูล</Chip>
+                                    </td>
                                 </tr>
                             )
                         }
@@ -116,7 +131,7 @@ export default function MainChat() {
                     </Table>
                 </Sheet>
             </>
-        )
+        );
     }
 
     return (
@@ -126,8 +141,8 @@ export default function MainChat() {
                     <Box sx={{display: 'flex', alignItems: 'center'}}>
                         <BreadcrumbsComponent list={pendingPath}/>
                     </Box>
-                    <ListTableComponent dataset={chats} title='รอดำเนินการ'/>
-                    <ListTableComponent dataset={chats} title='กำลังดำเนินการ'/>
+                    <ListTableComponent dataset={progress} title='กำลังดำเนินการ'/>
+                    <ListTableComponent dataset={pending} title='รอดำเนินการ'/>
                 </Box>
             </Sheet>
         </>
