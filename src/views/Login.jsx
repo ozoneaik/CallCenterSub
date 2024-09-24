@@ -22,7 +22,7 @@ import {AlertDiaLog} from "../Dialogs/Alert.js";
 import {loginApi} from "../api/Auth.js";
 
 export default function Login() {
-    const [email, setEmail] = useState('70010@mail.com');
+    const [email, setEmail] = useState('70010');
     const [password, setPassword] = useState('1111');
     const [loading, setLoading] = useState(false);
     const {setUser, csrfToken} = useAuth();
@@ -33,12 +33,13 @@ export default function Login() {
         e.preventDefault();
         await csrfToken();
         try {
-            const {data, status} =  await loginApi(email,password);
+            const Email = email+'@mail.local'
+            const {data, status} = await loginApi(Email, password);
             if (status === 200) {
                 setUser(data.user);
                 return <Navigate to="/home"/>;
-            }else{
-                AlertDiaLog({text : data.message})
+            } else {
+                AlertDiaLog({text: data.message})
             }
         } finally {
             setLoading(false);
@@ -81,7 +82,7 @@ export default function Login() {
                             <form onSubmit={handleSubmit} method={'POST'}>
                                 <FormControl required>
                                     <FormLabel>รหัสพนักงาน</FormLabel>
-                                    <Input defaultValue={email} onChange={(e) => setEmail(e.target.value)} type="email"
+                                    <Input defaultValue={email} onChange={(e) => setEmail(e.target.value)} type={'text'}
                                            name="email"/>
                                 </FormControl>
                                 <FormControl required>

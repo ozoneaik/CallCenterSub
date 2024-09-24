@@ -25,7 +25,7 @@ import {useAuth} from "../context/AuthContext.jsx";
 import {AlertDiaLog} from "../Dialogs/Alert.js";
 import {logoutApi} from "../api/Auth.js";
 import {Link, useLocation, useNavigate} from "react-router-dom";
-import {ChatRoomsApi} from "../api/ChatRooms.js";
+import {chatRoomListApi} from "../api/Messages.js";
 
 export default function Sidebar() {
     const {user, setUser} = useAuth();
@@ -35,7 +35,7 @@ export default function Sidebar() {
 
     useEffect(() => {
         const fetchChatRooms = async () => {
-            const {data, status} = await ChatRoomsApi();
+            const {data, status} = await chatRoomListApi();
             status === 200 && setChatRooms(data.chatRooms);
         }
         fetchChatRooms().then(() => console.log('fetch 👏'));
